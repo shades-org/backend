@@ -16,3 +16,18 @@ model Investor {
   password   String
   created_at DateTime @default(now())
 }
+
+model Pitcher {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+
+  email        String   @unique
+  name         String
+  dob          DateTime
+  phoneNumber  String
+  profilePic   String   @unique
+  profileVideo String   @unique
+  bio          String
+
+  links Json[]
+}
