@@ -1,74 +1,39 @@
-import { PrismaClient } from "@prisma/client";
 import { failureLabel, successLabel } from "../../constants.js";
+
 import {
-  ALREADY_EXISTS_CONFLICT_CODE,
-  INTERNAL_SERVER_ERROR_CODE,
-  NOT_FOUND_CODE,
-  SUCCESSFUL_RESOURCE_CREATION_CODE,
-  SUCCESS_CODE,
-} from "../../statusCodes.js";
-import { getUser } from "../../utils/firebase.js";
+  getPitcherRegistrationStatus,
+  registerPitcherOps,
+} from "../../operations/pitchers.js";
 
-const prisma = new PrismaClient();
-
+// Route Handler to check whether a Pitcher is registered or not
 export const isPitcherRegistered = async (req, res) => {
-  // Find by email in Prisma
-  const existingPitcher = await prisma.pitcher.findFirst({
-    where: {
-      email: req.user.email,
-    },
-  });
+  const [flag, msg, code] = await getPitcherRegistrationStatus(req.user.email);
 
-  if (existingPitcher)
-    return res
-      .status(SUCCESS_CODE)
-      .json({ status: successLabel, msg: "User registered" });
-  else
-    return res
-      .status(NOT_FOUND_CODE)
-      .json({ status: failureLabel, msg: "User is not registered" });
+  return res
+    .status(code)
+    .json({ status: flag ? successLabel : failureLabel, msg });
 };
 
+// Route Handler for Pitcher Registration
 export const registerPitcher = async (req, res) => {
-  // destructuring the Request Object
+  // Destructuring the Request Object
   const { name, dob, phoneNumber, profilePic, profileVideo, bio, links } =
     req.body;
 
-  const parsedDob = new Date(dob);
-
-  // Find by email in Prisma
-  const existingPitcher = await prisma.pitcher.findFirst({
-    where: {
-      email: req.user.email,
+  const [flag, msg, code] = await registerPitcherOps(
+    {
+      name,
+      dob,
+      phoneNumber,
+      profilePic,
+      profileVideo,
+      bio,
+      links,
     },
-  });
+    req.user.email
+  );
 
-  if (existingPitcher)
-    return res
-      .status(ALREADY_EXISTS_CONFLICT_CODE)
-      .json({ status: failureLabel, msg: "User already registered" });
-
-  try {
-    const newPitcher = await prisma.pitcher.create({
-      data: {
-        email: req.user.email,
-        name,
-        dob: parsedDob,
-        phoneNumber,
-        profilePic,
-        profileVideo,
-        bio,
-        links,
-      },
-    });
-
-    return res
-      .status(SUCCESSFUL_RESOURCE_CREATION_CODE)
-      .json({ status: successLabel, msg: "Pitcher Successfully Registered" });
-  } catch (error) {
-    console.error(error);
-    return res
-      .status(INTERNAL_SERVER_ERROR_CODE)
-      .json({ status: failureLabel, msg: "Internal Server Error" });
-  }
+  return res
+    .status(code)
+    .json({ status: flag ? successLabel : failureLabel, msg });
 };
