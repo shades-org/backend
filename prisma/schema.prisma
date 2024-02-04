@@ -11,10 +11,11 @@ datasource db {
 }
 
 model Investor {
-  id         String   @id @default(uuid())
-  email      String   @unique
-  password   String
-  created_at DateTime @default(now())
+  id             String           @id @default(uuid())
+  email          String           @unique
+  password       String
+  created_at     DateTime         @default(now())
+  Pitch_Feedback Pitch_Feedback[]
 }
 
 model Pitcher {
@@ -29,5 +30,61 @@ model Pitcher {
   profileVideo String   @unique
   bio          String
 
-  links Json[]
+  links   Json[]
+  Pitches Pitcher_Pitch_Map[]
+}
+
+model Pitch {
+  id         String   @id @default(uuid())
+  created_at DateTime @default(now())
+
+  last_modified_at    DateTime
+  name                String
+  tagline             String
+  description         String
+  logoURL             String
+  imageURL            String[]
+  videoURL            String
+  turnover            Float
+  tags                String[]
+  links               String[]
+  Pitcher             Pitcher_Pitch_Map[]
+  FoundingTeamMembers FoundingTeamMember[]
+  Pitch_Feedback      Pitch_Feedback[]
+}
+
+model Pitcher_Pitch_Map {
+  id String @id @default(uuid())
+
+  pitch   Pitch  @relation(fields: [pitchId], references: [id])
+  pitchId String
+
+  pitcher   Pitcher @relation(fields: [pitcherId], references: [id])
+  pitcherId String
+}
+
+model FoundingTeamMember {
+  id String @id @default(uuid())
+
+  pitch   Pitch  @relation(fields: [pitchId], references: [id])
+  pitchId String
+
+  name        String
+  imageURL    String
+  designation String
+
+  portfolioLink String
+}
+
+model Pitch_Feedback {
+  id String @id @default(uuid())
+
+  pitch   Pitch  @relation(fields: [pitchId], references: [id])
+  pitchId String
+
+  investor   Investor @relation(fields: [investorId], references: [id])
+  investorId String
+
+  stars  Float
+  review String
 }

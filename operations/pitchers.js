@@ -8,7 +8,6 @@ import {
 } from "../statusCodes.js";
 
 const prisma = new PrismaClient();
-
 /**
  *
  * @param {string} email
@@ -81,5 +80,20 @@ export const registerPitcherOps = async (pitcherObj, email) => {
     // Internal Server Error
     console.log(error);
     return [false, "Internal Server Error", INTERNAL_SERVER_ERROR_CODE];
+  }
+};
+
+export const getProfileOps = async (email) => {
+  try {
+    const existingPitcher = await prisma.pitcher.findFirst({
+      where: { email },
+    });
+
+    if (!existingPitcher)
+      return [false, "Pitcher Not Found", NOT_FOUND_CODE, null];
+    return [true, "Pitcher Found", SUCCESS_CODE, existingPitcher];
+  } catch (error) {
+    console.log(error);
+    return [false, "Internal Server Error", INTERNAL_SERVER_ERROR_CODE, null];
   }
 };

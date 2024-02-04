@@ -93,3 +93,37 @@ export const loginInvestor = async (email, password) => {
     return [false, "Internal Server Error", INTERNAL_SERVER_ERROR_CODE, null];
   }
 };
+
+export const pitchFedbackOps = async (email, pitchId, stars, review) => {
+  try {
+    const existingInvestor = await prisma.investor.findFirst({
+      where: { email },
+    });
+    if (!existingInvestor)
+      return [false, "Investor Not Found", UNAUTHENTICATED_CODE];
+
+    const existingPitch = await prisma.pitch.findFirst({
+      where: { id: pitchId },
+    });
+    if (!existingPitch) return [false, "Pitch Not Found", NOT_FOUND_CODE];
+
+    const existingFeeback = await prisma.pitch_Feedback.findFirst({
+      where: { investorid: existingInvestor.id, pitchId },
+    });
+    if (existingFeeback)
+      return [false, "Feedback already exists", ALREADY_EXISTS_CONFLICT_CODE];
+
+    const newFeedback = await prisma.pitch_Feedback.create({
+      data: {
+        investorId: existingInvestor.id,
+        pitchId: existingPitch.id,
+        stars: parseFloat(stars),
+        review,
+      },
+    });
+
+    return [true, "Feedback recorded", SUCCESSFUL_RESOURCE_CREATION_CODE];
+  } catch (error) {
+    return [false, "Internal Server Error", INTERNAL_SERVER_ERROR_CODE];
+  }
+};
