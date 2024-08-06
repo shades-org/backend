@@ -3,7 +3,7 @@
 ## Tech Stack:
 
 1. Backend
-   - MongoDB Atlas (Database)
+   - PostgreSQL (Database)
    - ExpressJS (API Framework)
    - Prisma (ORM)
    - Firebase Admin SDK
